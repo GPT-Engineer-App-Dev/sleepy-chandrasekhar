@@ -1,15 +1,63 @@
-// Complete the Index page component here
-// Use chakra-ui
-import { Button } from "@chakra-ui/react"; // example
-import { FaPlus } from "react-icons/fa"; // example - use react-icons/fa for icons
+import React, { useState } from "react";
+import { Button, Input, Table, Thead, Tbody, Tr, Th, Td } from "@chakra-ui/react";
 
 const Index = () => {
-  // TODO: Create the website here!
+  const [filteredData, setFilteredData] = useState([]);
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const csvData = e.target.result;
+      const rows = csvData.split("\n");
+      const header = rows[0].split(",");
+      const data = rows.slice(1).map((row) => {
+        const values = row.split(",");
+        return header.reduce((obj, key, index) => {
+          obj[key] = values[index];
+          return obj;
+        }, {});
+      });
+
+      const filteredRows = data.filter((row) => row.type === "ai_update");
+      setFilteredData(filteredRows);
+    };
+
+    reader.readAsText(file);
+  };
+
   return (
-    <Button>
-      Hello world! <FaPlus />
-    </Button>
-  ); // example
+    <div>
+      <form>
+        <Input type="file" accept=".csv" onChange={handleFileUpload} />
+        <Button type="submit">Upload CSV</Button>
+      </form>
+
+      {filteredData.length > 0 && (
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>ID</Th>
+              <Th>Commit SHA</Th>
+              <Th>Created At</Th>
+              <Th>Tags</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {filteredData.map((row) => (
+              <Tr key={row.id}>
+                <Td>{row.id}</Td>
+                <Td>{row.commit_sha}</Td>
+                <Td>{row.created_at}</Td>
+                <Td>{row.tags}</Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      )}
+    </div>
+  );
 };
 
 export default Index;
